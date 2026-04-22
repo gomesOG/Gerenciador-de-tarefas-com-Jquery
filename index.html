@@ -16,28 +16,39 @@
             <button id="btn-adicionar">Adicionar</button>
         </div>
         <ul id="lista-tarefas">
-
         </ul>
+
+        <ul id="lista-tarefas">
+        </ul>
+
+        <button id="btn-limpar">
+            Limpar tarefas concluídas
+        </button>
+
     </div>
 
     <script>
-        $(document).ready(function(){
+        $(document).ready(function() {
 
             //Função para adicionar tarefa
-            $("#btn-adicionar").click(function(){
+            $("#btn-adicionar").click(function() {
                 //Pega o valor que o usuário digitou
                 let textoTarefa = $("#input-tarefa").val();
 
-                //Verificando se o campo nao está vazio
+                //Verificando se o campo não está vazio
                 if(textoTarefa.trim() === ""){
-                    alert("Por favor, digite uma tarefa");
+                    alert("Por favor, digite uma tarefa.");
                     return;
                 }
 
                 let novaLinha = `
                     <li style="display: none">
-                        <span>${textoTarefa}</span>
-                        <button class="btn-remover">X</button>
+                        <span class="texto-tarefa">${textoTarefa}</span>
+                        <input type="text" class="input-edicao" value="${textoTarefa}" style="display: none;">
+                        <div class="acoes">
+                            <button class="btn-editar">Editar</button> 
+                            <button class="btn-remover">X</button>
+                        </div>
                     </li>
                 `;
 
@@ -48,15 +59,72 @@
                 $("#input-tarefa").val("").focus();
             });
 
-             //Função para remover a tarefa
-                $("#lista-tarefas").on("click", ".btn-remover", function(){
+            //Função para remover a tarefa
+            $("#lista-tarefas").on("click", ".btn-remover", function() {
 
-                    let linhaDaTarefa = $(this).parent();
+                let linhaDaTarefa = $(this).closest("li");
 
-                    linhaDaTarefa.fadeOut("fast", function(){''
+                linhaDaTarefa.fadeOut("fast", function() {''
                         $(this).remove();
-                    });
                 });
+            });
+
+            //Função para enviar com a tecla Enter
+            $("#input-tarefa").keypress(function(evento) {
+
+                if(evento.which === 13){
+                    $("#btn-adicionar").click();
+                }
+            });
+            
+            //Função para marcar a tarefa como concluída
+            $("#lista-tarefas").on("click", "span", function() {
+                
+                $(this).parent().toggleClass("concluida");
+
+            });
+
+            //Função para limpar todas a tarefas concluídas
+            $("#btn-limpar").click(function() {
+                   
+                let tarefasConcluidas = $("#lista-tarefas li.concluida");
+
+                if (tarefasConcluidas.length === 0){
+                    alert ("Você não tem tarefas concluídas para limpar.");
+                    return;
+                }
+
+                tarefasConcluidas.fadeOut("fast", function() {
+                    $(this).remove();
+                });    
+
+            });
+
+            //Funçao para iniciar a edição da tarefa
+            $("#lista-tarefas").on("click", ".btn-editar", function() {
+
+                let linha = $(this).closest("li");
+
+                linha.find(".texto-tarefa").hide();
+                $(this).hide();
+
+                linha.find(".input-edicao").show().focus();
+
+            });
+
+            //Salvando a edição
+            $("#lista-tarefas").on("keypress", ".input-edicao", function(evento) {
+                if (evento.which === 13) {
+                    let linha = $(this).closest("li");
+                    let novoTexto = $(this).val();
+
+                    linha.find(".texto-tarefa"). text(novoTexto).show();
+
+                    $(this).hide();
+                    linha.find(".btn-editar").show(); 
+                }
+            });
+
         });
     </script>
 
