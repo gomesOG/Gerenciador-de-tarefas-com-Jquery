@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Tarefas</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.js" integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+<body>
+    
+    <div id="app">
+        <h2>Gerenciador de Tarefas</h2>
+
+        <div class="controles">
+            <input type="text" id="input-tarefa" placeholder="O que precisa ser feito?">
+            <button id="btn-adicionar">Adicionar</button>
+        </div>
+        <ul id="lista-tarefas">
+
+        </ul>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+
+            //Função para adicionar tarefa
+            $("#btn-adicionar").click(function(){
+                //Pega o valor que o usuário digitou
+                let textoTarefa = $("#input-tarefa").val();
+
+                //Verificando se o campo nao está vazio
+                if(textoTarefa.trim() === ""){
+                    alert("Por favor, digite uma tarefa");
+                    return;
+                }
+
+                let novaLinha = `
+                    <li style="display: none">
+                        <span>${textoTarefa}</span>
+                        <button class="btn-remover">X</button>
+                    </li>
+                `;
+
+                //Adicionando a nova linha à lista
+                $("#lista-tarefas").append(novaLinha);
+                $("#lista-tarefas li:last").fadeIn("fast");
+
+                $("#input-tarefa").val("").focus();
+            });
+
+             //Função para remover a tarefa
+                $("#lista-tarefas").on("click", ".btn-remover", function(){
+
+                    let linhaDaTarefa = $(this).parent();
+
+                    linhaDaTarefa.fadeOut("fast", function(){''
+                        $(this).remove();
+                    });
+                });
+        });
+    </script>
+
+</body>
+</html>
