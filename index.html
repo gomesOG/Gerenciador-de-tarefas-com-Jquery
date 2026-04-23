@@ -4,31 +4,90 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerenciador de Tarefas</title>
-    <script src="https://code.jquery.com/jquery-1.12.4.js" integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+
     <link rel="stylesheet" href="style.css">
-<body>
-    
-    <div id="app">
-        <h2>Gerenciador de Tarefas</h2>
 
-        <div class="controles">
-            <input type="text" id="input-tarefa" placeholder="O que precisa ser feito?">
-            <button id="btn-adicionar">Adicionar</button>
+    <script src="https://code.jquery.com/jquery-1.12.4.js" integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU=" crossorigin="anonymous"></script>
+
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+</head>
+    <body>
+
+        <div class="container">
+            <div class="page-header">
+                <h1>Sistema de Controle <small>Painel Administrativo</small></h1>
+            </div>
+            <div class="row">
+                <div class="col-xs-12 col-md-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h3 class="panel-tittle">Minhas Tarefas</h3>
+                        </div>
+                        <div class="panel-body">
+                            <div class="input-group" style="margin-top: 20px;">
+                                <input type="text" id="input-tarefa" class="form-control" placeholder="O que precisa ser feito?">
+                                <span class="input-group-btn">
+                                    <button class="btn btn-success" id="btn-adicionar" type="button">Adicionar</button>
+                                </span>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <small>Progresso das Tarefas</small>
+                                <div class="progress" style="margin-top: 5px; margin-bottom: 20px;">
+                                    <div id="barra-progresso" class="progress-bar progress-bar-success" role="progressbar" style="width: 0%;">
+                                        0%
+                                    </div>
+                                </div>
+                            </div>
+                            <ul id="lista-tarefas" class="list-group"></ul>
+                            <button id="btn-limpar" class="btn btn-danger btn-block">Limpar tarefas concluídas</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <ul id="lista-tarefas">
-        </ul>
 
-        <ul id="lista-tarefas">
-        </ul>
-
-        <button id="btn-limpar">
-            Limpar tarefas concluídas
-        </button>
-
-    </div>
+        <div class="modal fade" id="modalConfirmacao" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title text-danger">Atenção</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p>Tem certeza que quer excluir esta tarefa?</p>
+                    </div>
+                    <div class="modal-footer"> 
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-danger" id="btn-confirmar-exclusao">Sim, excluir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <script>
         $(document).ready(function() {
+
+            function atualizarProgresso() {
+                
+                let totalTarefas = $("#lista-tarefas li").length;
+                let tarefasConcluidas = $("#lista-tarefas li.concluida").length;
+
+                let porcentagem = 0;
+
+                if (totalTarefas > 0){
+                    porcentagem = Math.round((tarefasConcluidas / totalTarefas) * 100);
+                }
+
+                $("#barra-progresso")
+                    .css ("width", porcentagem + "%")
+                    .text(porcentagem + "%");
+
+            }
+
+            let linhaParaExcluir = null;
 
             //Função para adicionar tarefa
             $("#btn-adicionar").click(function() {
@@ -42,12 +101,14 @@
                 }
 
                 let novaLinha = `
-                    <li style="display: none">
+                    <li class="list-group-item clearfix" style="display: none">
                         <span class="texto-tarefa">${textoTarefa}</span>
-                        <input type="text" class="input-edicao" value="${textoTarefa}" style="display: none;">
-                        <div class="acoes">
-                            <button class="btn-editar">Editar</button> 
-                            <button class="btn-remover">X</button>
+
+                        <input type="text" class="form-control input-edicao" value="${textoTarefa}" style="display: none; width: 60%;">
+
+                        <div class="acoes pull-right">
+                            <button class="btn btn-warning btn-sm btn-editar">Editar</button> 
+                            <button class="btn btn-danger btn-sm btn-remover">X</button>
                         </div>
                     </li>
                 `;
@@ -57,16 +118,35 @@
                 $("#lista-tarefas li:last").fadeIn("fast");
 
                 $("#input-tarefa").val("").focus();
+
+                atualizarProgresso();
             });
 
             //Função para remover a tarefa
             $("#lista-tarefas").on("click", ".btn-remover", function() {
 
-                let linhaDaTarefa = $(this).closest("li");
+                linhaParaExcluir = $(this).closest("li");
 
-                linhaDaTarefa.fadeOut("fast", function() {''
+                $("#modalConfirmacao").modal('show');
+
+            });
+
+            $("#btn-confirmar-exclusao").click(function(){
+
+                if (linhaParaExcluir !== null){
+
+                    linhaParaExcluir.fadeOut("fast", function(){
                         $(this).remove();
-                });
+
+                        atualizarProgresso();
+
+                    });
+
+                    $("#modalConfirmacao").modal('hide');
+
+                    linhaParaExcluir = null;
+                }
+                
             });
 
             //Função para enviar com a tecla Enter
@@ -81,6 +161,8 @@
             $("#lista-tarefas").on("click", "span", function() {
                 
                 $(this).parent().toggleClass("concluida");
+
+                atualizarProgresso();
 
             });
 
@@ -97,6 +179,8 @@
                 tarefasConcluidas.fadeOut("fast", function() {
                     $(this).remove();
                 });    
+
+                atualizarProgresso();
 
             });
 
